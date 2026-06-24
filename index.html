@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>イネイト症例集</title>
+<style>
+  /* ── Design tokens ── */
+  :root {
+    --ink:      #1a2230;
+    --muted:    #5a6678;
+    --rule:     #dde3ec;
+    --bg:       #f5f7fa;
+    --surface:  #ffffff;
+    --accent:   #2a6e5c;   /* 深緑：生命・療法の静けさ */
+    --accent2:  #e8f3ef;
+    --warn:     #c0392b;
+    --radius:   8px;
+    --shadow:   0 2px 8px rgba(0,0,0,.08);
+    --font-body: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 { font-size: 17px; font-weight: 700; letter-spacing: .04em; flex: 1; }
+  .badge {
+    background: rgba(255,255,255,.18);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* ── Author bar ── */
+  .author-bar {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .author-bar label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .author-bar input {
+    flex: 1;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .author-bar input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--rule);
+  }
+  .tab-btn {
+    padding: 8px 18px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: all .15s;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    background: var(--accent2);
+    font-weight: 700;
+  }
+  .tab-btn:hover:not(.active) { background: var(--bg); }
+
+  /* ── Search bar ── */
+  .search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .search-row input {
+    flex: 1;
+    min-width: 180px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface);
+  }
+  .search-row input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  .btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-primary { background: var(--accent); color: #fff; font-weight: 700; }
+  .btn-ghost { background: var(--surface); border: 1px solid var(--rule); color: var(--ink); }
+  .btn-warn { background: #fdf0ef; border: 1px solid #f5c6c2; color: var(--warn); }
+  .btn-sm { padding: 4px 12px; font-size: 13px; }
+
+  /* ── Case list ── */
+  .case-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .case-card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .case-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(42,110,92,.12); }
+
+  .case-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .case-title { font-weight: 700; font-size: 15px; flex: 1; }
+  .case-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .tag {
+    display: inline-block;
+    background: var(--accent2);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin: 2px 2px 0 0;
+  }
+
+  /* ── Detail / Form ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .field-group input,
+  .field-group textarea,
+  .field-group select {
+    width: 100%;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--bg);
+    resize: vertical;
+  }
+  .field-group input:focus,
+  .field-group textarea:focus { outline: 2px solid var(--accent); border-color: transparent; background: #fff; }
+  .field-group textarea { min-height: 90px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rule); }
+
+  /* Detail view */
+  .detail-field { margin-bottom: 14px; }
+  .detail-field .dl { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 3px; }
+  .detail-field .dv { font-size: 14px; white-space: pre-wrap; }
+  .detail-field .dv a { color: var(--accent); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 24px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all .3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Loading ── */
+  .loading { text-align: center; padding: 40px; color: var(--muted); }
+  .empty { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+
+  /* ── Count ── */
+  .count-row { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+
+  /* ── Print ── */
+  @media print {
+    header, .tabs, .search-row, .author-bar, .action-row, #toast { display: none !important; }
+    body { background: #fff; }
+    .panel { box-shadow: none; border: none; }
+    .container { padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 イネイト症例集</h1>
+  <span class="badge" id="total-badge">読込中…</span>
+</header>
+
+<div class="container">
+
+  <!-- 投稿者名 -->
+  <div class="author-bar">
+    <label>あなたの名前：</label>
+    <input type="text" id="current-author" placeholder="投稿者名（修正・削除に必要）" />
+  </div>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('list')">📋 一覧・検索</button>
+    <button class="tab-btn" onclick="switchTab('add')">✏️ 新規登録</button>
+  </div>
+
+  <!-- 一覧タブ -->
+  <div id="tab-list">
+    <div class="search-row">
+      <input type="text" id="q" placeholder="タイトル・症状・キーワードで検索…" oninput="filterCases()" />
+      <button class="btn btn-ghost" onclick="loadCases()">🔄 再読込</button>
+    </div>
+    <div class="count-row" id="count-row"></div>
+    <div class="case-list" id="case-list">
+      <div class="loading">読み込み中…</div>
+    </div>
+  </div>
+
+  <!-- 新規登録タブ -->
+  <div id="tab-add" style="display:none">
+    <div class="panel">
+      <div class="form-grid">
+        <div class="field-group">
+          <label>タイトル *</label>
+          <input type="text" id="f-title" placeholder="症例のタイトル" />
+        </div>
+        <div class="field-group">
+          <label>症状・病名 *</label>
+          <input type="text" id="f-symptom" placeholder="主な症状や病名" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>内容</label>
+        <textarea id="f-content" placeholder="経過・施術内容・所見など"></textarea>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>どこ？（部位）</label>
+          <input type="text" id="f-location" placeholder="患部・施術部位" />
+        </div>
+        <div class="field-group">
+          <label>どうなってる？（状態）</label>
+          <input type="text" id="f-condition" placeholder="状態の説明" />
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>キーワード</label>
+          <input type="text" id="f-keywords" placeholder="スペース区切りで複数入力" />
+        </div>
+        <div class="field-group">
+          <label>発信元</label>
+          <input type="text" id="f-source" placeholder="参考・出典元" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>参考リンク</label>
+        <input type="text" id="f-link" placeholder="https://..." />
+      </div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>投稿者（自動入力）</label>
+          <input type="text" id="f-author" placeholder="上の名前欄から自動入力" readonly style="background:#f0f0f0" />
+        </div>
+        <div class="field-group">
+          <label>メールアドレス（任意）</label>
+          <input type="email" id="f-email" placeholder="省略可" />
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="submitAdd()">登録する</button>
+        <button class="btn btn-ghost" onclick="clearForm()">クリア</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 詳細パネル（モーダル的に表示） -->
+  <div id="detail-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:200; overflow-y:auto; padding:20px;">
+    <div style="max-width:700px; margin:0 auto;">
+      <div class="panel" id="detail-panel"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// 設定
+// ============================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyYG9uuIbrsh19JQOtkqxetsjL1xBE4uKyUStV4qJpd4ppKXSIlg4wIzMKDXZySr5LxAA/exec';
+
+// ============================================================
+// State
+// ============================================================
+let allCases = [];
+let editingRow = null;
+
+// ============================================================
+// 初期化
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  // 投稿者名の復元
+  const saved = localStorage.getItem('innate_author');
+  if (saved) document.getElementById('current-author').value = saved;
+  document.getElementById('current-author').addEventListener('input', e => {
+    localStorage.setItem('innate_author', e.target.value);
+    document.getElementById('f-author').value = e.target.value;
+  });
+  document.getElementById('f-author').value = document.getElementById('current-author').value;
+  loadCases();
+});
+
+// ============================================================
+// タブ切替
+// ============================================================
+function switchTab(tab) {
+  document.getElementById('tab-list').style.display = tab === 'list' ? '' : 'none';
+  document.getElementById('tab-add').style.display  = tab === 'add'  ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0) === (tab === 'list'));
+  });
+  if (tab === 'add') {
+    document.getElementById('f-author').value = document.getElementById('current-author').value;
+    editingRow = null;
+  }
+}
+
+// ============================================================
+// データ取得
+// ============================================================
+async function loadCases() {
+  document.getElementById('case-list').innerHTML = '<div class="loading">読み込み中…</div>';
+  try {
+    const res = await fetch(`${GAS_URL}?action=getAll`);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    allCases = json.data;
+    document.getElementById('total-badge').textContent = `${allCases.length} 件`;
+    filterCases();
+  } catch (e) {
+    document.getElementById('case-list').innerHTML = `<div class="empty">⚠️ 読込エラー：${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// 検索・一覧表示
+// ============================================================
+function filterCases() {
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const filtered = allCases.filter(c => {
+    if (!q) return true;
+    return ['タイトル','症状・病名','キーワード','内容','投稿者','どこ？','どうなってる？']
+      .some(k => (c[k] || '').toLowerCase().includes(q));
+  });
+  renderList(filtered);
+  document.getElementById('count-row').textContent =
+    q ? `"${q}" の検索結果：${filtered.length} 件 / 全 ${allCases.length} 件` : `全 ${allCases.length} 件`;
+}
+
+function renderList(cases) {
+  const el = document.getElementById('case-list');
+  if (cases.length === 0) {
+    el.innerHTML = '<div class="empty">該当する症例がありません</div>';
+    return;
+  }
+  el.innerHTML = cases.map(c => {
+    const tags = (c['キーワード'] || '').split(/[\s,、，]+/).filter(Boolean)
+      .map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    const date = c['タイムスタンプ'] ? new Date(c['タイムスタンプ']).toLocaleDateString('ja-JP') : '';
+    return `
+    <div class="case-card" onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+      <div class="case-card-header">
+        <div class="case-title">${esc(c['タイトル'] || '（無題）')}</div>
+      </div>
+      <div class="case-meta">
+        <span>🔴 ${esc(c['症状・病名'] || '—')}</span>
+        ${c['どこ？'] ? `<span>📍 ${esc(c['どこ？'])}</span>` : ''}
+        ${c['投稿者'] ? `<span>👤 ${esc(c['投稿者'])}</span>` : ''}
+        ${date ? `<span>🗓 ${date}</span>` : ''}
+      </div>
+      ${tags ? `<div style="margin-top:6px">${tags}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// 詳細表示
+// ============================================================
+function openDetail(c) {
+  const currentAuthor = document.getElementById('current-author').value.trim();
+  const isOwner = currentAuthor && currentAuthor === c['投稿者'];
+  const date = c['タイムスタンプ'] ? new Date(c['タイムスタンプ']).toLocaleString('ja-JP') : '—';
+  const link = c['参考リンク'] ? `<a href="${esc(c['参考リンク'])}" target="_blank">${esc(c['参考リンク'])}</a>` : '—';
+
+  document.getElementById('detail-panel').innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:18px;">${esc(c['タイトル'] || '（無題）')}</h2>
+      <button class="btn btn-ghost btn-sm" onclick="closeDetail()">✕ 閉じる</button>
+    </div>
+
+    <div class="detail-field"><div class="dl">症状・病名</div><div class="dv">${esc(c['症状・病名'] || '—')}</div></div>
+    <div class="detail-field"><div class="dl">内容</div><div class="dv">${esc(c['内容'] || '—')}</div></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 20px;">
+      <div class="detail-field"><div class="dl">どこ？</div><div class="dv">${esc(c['どこ？'] || '—')}</div></div>
+      <div class="detail-field"><div class="dl">どうなってる？</div><div class="dv">${esc(c['どうなってる？'] || '—')}</div></div>
+      <div class="detail-field"><div class="dl">キーワード</div><div class="dv">${esc(c['キーワード'] || '—')}</div></div>
+      <div class="detail-field"><div class="dl">発信元</div><div class="dv">${esc(c['発信元'] || '—')}</div></div>
+    </div>
+    <div class="detail-field"><div class="dl">参考リンク</div><div class="dv">${link}</div></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 20px;">
+      <div class="detail-field"><div class="dl">投稿者</div><div class="dv">${esc(c['投稿者'] || '—')}</div></div>
+      <div class="detail-field"><div class="dl">投稿日時</div><div class="dv">${date}</div></div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="window.print()">🖨 印刷</button>
+      ${isOwner ? `
+        <button class="btn btn-ghost" onclick='openEdit(${JSON.stringify(c).replace(/'/g,"&apos;")})'>✏️ 修正</button>
+        <button class="btn btn-warn" onclick='confirmDelete(${c._row}, "${esc(c['投稿者'])}")'>🗑 削除</button>
+      ` : ''}
+    </div>
+  `;
+  document.getElementById('detail-overlay').style.display = '';
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').style.display = 'none';
+}
+
+// オーバーレイ外クリックで閉じる
+document.getElementById('detail-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeDetail();
+});
+
+// ============================================================
+// 編集
+// ============================================================
+function openEdit(c) {
+  closeDetail();
+  editingRow = c._row;
+  switchTab('add');
+
+  document.getElementById('f-title').value    = c['タイトル'] || '';
+  document.getElementById('f-symptom').value  = c['症状・病名'] || '';
+  document.getElementById('f-content').value  = c['内容'] || '';
+  document.getElementById('f-location').value = c['どこ？'] || '';
+  document.getElementById('f-condition').value= c['どうなってる？'] || '';
+  document.getElementById('f-keywords').value = c['キーワード'] || '';
+  document.getElementById('f-source').value   = c['発信元'] || '';
+  document.getElementById('f-link').value     = c['参考リンク'] || '';
+  document.getElementById('f-author').value   = c['投稿者'] || '';
+  document.getElementById('f-email').value    = c['メールアドレス'] || '';
+
+  // ボタンを「更新」に変更
+  const addBtn = document.querySelector('#tab-add .btn-primary');
+  addBtn.textContent = '更新する';
+  addBtn.onclick = submitUpdate;
+  document.querySelector('#tab-add h3') && (document.querySelector('#tab-add h3').textContent = '症例を修正');
+}
+
+// ============================================================
+// 新規登録送信
+// ============================================================
+async function submitAdd() {
+  const author = document.getElementById('current-author').value.trim();
+  if (!author) { toast('先に「あなたの名前」を入力してください'); return; }
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { toast('タイトルは必須です'); return; }
+
+  const params = buildParams();
+  params.action = 'add';
+  params.author = author;
+
+  try {
+    const res = await fetch(GAS_URL + '?' + new URLSearchParams(params));
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    toast('✅ 登録しました！');
+    clearForm();
+    loadCases();
+    switchTab('list');
+  } catch (e) {
+    toast('❌ エラー：' + e.message);
+  }
+}
+
+// ============================================================
+// 更新送信
+// ============================================================
+async function submitUpdate() {
+  const author = document.getElementById('current-author').value.trim();
+  const params = buildParams();
+  params.action = 'update';
+  params.author = author;
+  params.row    = editingRow;
+
+  try {
+    const res = await fetch(GAS_URL + '?' + new URLSearchParams(params));
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    toast('✅ 更新しました！');
+    clearForm();
+    loadCases();
+    switchTab('list');
+    // ボタンを戻す
+    const addBtn = document.querySelector('#tab-add .btn-primary');
+    addBtn.textContent = '登録する';
+    addBtn.onclick = submitAdd;
+  } catch (e) {
+    toast('❌ エラー：' + e.message);
+  }
+}
+
+// ============================================================
+// 削除
+// ============================================================
+async function confirmDelete(row, author) {
+  if (!confirm(`この症例を削除しますか？\n投稿者：${author}`)) return;
+  const currentAuthor = document.getElementById('current-author').value.trim();
+  try {
+    const res = await fetch(GAS_URL + '?' + new URLSearchParams({ action:'delete', row, author: currentAuthor }));
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    toast('🗑 削除しました');
+    closeDetail();
+    loadCases();
+  } catch (e) {
+    toast('❌ エラー：' + e.message);
+  }
+}
+
+// ============================================================
+// ユーティリティ
+// ============================================================
+function buildParams() {
+  return {
+    title:     document.getElementById('f-title').value.trim(),
+    symptom:   document.getElementById('f-symptom').value.trim(),
+    content:   document.getElementById('f-content').value.trim(),
+    location:  document.getElementById('f-location').value.trim(),
+    condition: document.getElementById('f-condition').value.trim(),
+    keywords:  document.getElementById('f-keywords').value.trim(),
+    source:    document.getElementById('f-source').value.trim(),
+    link:      document.getElementById('f-link').value.trim(),
+    email:     document.getElementById('f-email').value.trim(),
+  };
+}
+
+function clearForm() {
+  ['f-title','f-symptom','f-content','f-location','f-condition','f-keywords','f-source','f-link','f-email']
+    .forEach(id => document.getElementById(id).value = '');
+  editingRow = null;
+  const addBtn = document.querySelector('#tab-add .btn-primary');
+  addBtn.textContent = '登録する';
+  addBtn.onclick = submitAdd;
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, duration = 3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+</script>
+</body>
+</html>
